@@ -79,7 +79,7 @@ public class CatalogActions
     }
 
     [Action("get_app_details")]
-    [Description("Get detailed information about a specific Teams app by ID or name")]
+    [Description("Get detailed information about a specific Teams app by ID or name. Returns pre-formatted response without markdown.")]
     public async Task<string> GetAppDetailsAsync(
         [ActionTurnContext] ITurnContext turnContext,
         [ActionTurnState] AppTurnState turnState,
