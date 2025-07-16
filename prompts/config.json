@@ -1,0 +1,16 @@
+{
+  "schema": 1.1,
+  "description": "Teams App Catalog Expert prompts",
+  "prompts": [
+    {
+      "name": "system",
+      "description": "System prompt defining bot personality and capabilities",
+      "text": "./system.txt"
+    },
+    {
+      "name": "search-planner",
+      "description": "Plan search actions based on user query",
+      "text": "./search-planner.txt"
+    }
+  ]
+}

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams App Catalog Expert Bot - Test Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #6264a7;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .user-message {
+            background: #0078d4;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .bot-message {
+            background: #e1f5fe;
+            color: #333;
+            border-left: 4px solid #6264a7;
+        }
+        
+        .input-container {
+            display: flex;
+            padding: 20px;
+            background: white;
+        }
+        
+        .input-container input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .input-container input:focus {
+            border-color: #6264a7;
+        }
+        
+        .input-container button {
+            margin-left: 10px;
+            padding: 12px 24px;
+            background: #6264a7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .input-container button:hover {
+            background: #5a5c9e;
+        }
+        
+        .input-container button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .examples {
+            padding: 20px;
+            background: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .examples h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .example-btn {
+            padding: 6px 12px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s;
+        }
+        
+        .example-btn:hover {
+            background: #bbdefb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            border-left: 4px solid #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Teams App Catalog Expert Bot</h1>
+            <p>Test Interface - Ask me about Microsoft Teams applications!</p>
+        </div>
+        
+        <div class="status" id="status">
+            Loading system status...
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot-message">
+                👋 Hello! I'm the Teams App Catalog Expert Bot. I can help you search, discover, and learn about Microsoft Teams applications across different audience groups.
+                
+                Try asking me questions like:
+                • "Find Microsoft apps"
+                • "What apps are available in Ring 1?"
+                • "Show me pre-consented apps"
+                • "Tell me about Microsoft Teams"
+                • "Help"
+            </div>
+        </div>
+        
+        <div class="examples">
+            <h3>💡 Try these examples:</h3>
+            <div class="example-buttons">
+                <span class="example-btn" onclick="sendExample('microsoft apps')">Microsoft apps</span>
+                <span class="example-btn" onclick="sendExample('help')">Help</span>
+                <span class="example-btn" onclick="sendExample('status')">System status</span>
+                <span class="example-btn" onclick="sendExample('apps in ring1')">Apps in Ring 1</span>
+                <span class="example-btn" onclick="sendExample('pre-consented apps')">Pre-consented apps</span>
+                <span class="example-btn" onclick="sendExample('find teams')">Find Teams apps</span>
+                <span class="example-btn" onclick="sendExample('tell me about Microsoft Teams')">About Teams app</span>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Ask me about Teams apps..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()" id="sendButton">Send</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            🤔 Thinking...
+        </div>
+    </div>
+
+    <script>
+        let isLoading = false;
+
+        // Load system status on page load
+        window.onload = function() {
+            loadSystemStatus();
+        };
+
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch('/health');
+                const status = await response.json();
+                
+                let statusText = `✅ System Status: ${status.status} | `;
+                statusText += `📱 Apps: ${status.appCount} | `;
+                statusText += `🔒 Entitlements: ${status.entitlementCount} | `;
+                statusText += `⚡ Cache: ${Math.round(status.cacheEfficiency)}%`;
+                
+                document.getElementById('status').textContent = statusText;
+                document.getElementById('status').style.background = '#e8f5e8';
+                document.getElementById('status').style.color = '#2e7d32';
+            } catch (error) {
+                document.getElementById('status').textContent = '❌ Could not load system status';
+                document.getElementById('status').style.background = '#ffebee';
+                document.getElementById('status').style.color = '#d32f2f';
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isLoading) {
+                sendMessage();
+            }
+        }
+
+        function sendExample(text) {
+            document.getElementById('messageInput').value = text;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            if (isLoading) return;
+            
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, 'user');
+            
+            // Clear input and disable button
+            input.value = '';
+            setLoading(true);
+            
+            try {
+                const response = await fetch('/api/test-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: message })
+                });
+                
+                const data = await response.json();
+                
+                // Add bot response
+                addMessage(data.text, 'bot');
+                
+            } catch (error) {
+                addMessage(`❌ Error: ${error.message}`, 'bot error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function addMessage(text, type) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            
+            messageDiv.className = `message ${type === 'user' ? 'user-message' : type === 'bot error' ? 'bot-message error' : 'bot-message'}`;
+            messageDiv.textContent = text;
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            const button = document.getElementById('sendButton');
+            const loadingDiv = document.getElementById('loading');
+            
+            button.disabled = loading;
+            button.textContent = loading ? 'Sending...' : 'Send';
+            loadingDiv.style.display = loading ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

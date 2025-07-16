@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalog Expert Bot - Test Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 800px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: #6264a7;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: #6264a7;
+            color: white;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #666;
+            margin: 5px 10px 0 10px;
+            align-self: flex-end;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #6264a7;
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: #6264a7;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: #5356a4;
+        }
+
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            max-width: 70%;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #6264a7;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .status-info {
+            background: #e8f4f8;
+            border-left: 4px solid #2196F3;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 0 5px 5px 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            border-left: 4px solid #f44336;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 0 5px 5px 0;
+            font-size: 12px;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            🤖 Catalog Expert Bot - Test Chat
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="status-info">
+                Bot is running on <strong>http://localhost:5000</strong><br>
+                Try asking: "Find Microsoft apps", "Search for Teams", "Status", or "Help"
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Type your message here..." maxlength="500">
+            <button class="send-button" id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        class BotChat {
+            constructor() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.chatInput = document.getElementById('chatInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                
+                this.conversationId = this.generateConversationId();
+                this.userId = 'test-user-' + Date.now();
+                
+                this.initEventListeners();
+                this.addWelcomeMessage();
+            }
+            
+            generateConversationId() {
+                return 'test-conv-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            initEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+            }
+            
+            addWelcomeMessage() {
+                this.addMessage('bot', 'Hello! I\'m the Catalog Expert Bot. I can help you search and explore the Microsoft Teams app catalog. Try asking me about Microsoft apps, Teams, or specific app searches!');
+            }
+            
+            addMessage(sender, text, isError = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                const bubbleDiv = document.createElement('div');
+                bubbleDiv.className = 'message-bubble';
+                if (isError) {
+                    bubbleDiv.style.background = '#ffe6e6';
+                    bubbleDiv.style.borderLeft = '4px solid #f44336';
+                    bubbleDiv.style.color = '#d32f2f';
+                }
+                bubbleDiv.innerHTML = text.replace(/\n/g, '<br>');
+                
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = new Date().toLocaleTimeString();
+                
+                messageDiv.appendChild(bubbleDiv);
+                messageDiv.appendChild(timeDiv);
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+            
+            addErrorMessage(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.innerHTML = `❌ <strong>Error:</strong> ${message}`;
+                this.chatMessages.appendChild(errorDiv);
+                this.scrollToBottom();
+            }
+            
+            showTyping() {
+                this.typingIndicator.style.display = 'block';
+                this.scrollToBottom();
+            }
+            
+            hideTyping() {
+                this.typingIndicator.style.display = 'none';
+            }
+            
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+            
+            async sendMessage() {
+                const message = this.chatInput.value.trim();
+                if (!message) return;
+                
+                // Add user message
+                this.addMessage('user', message);
+                this.chatInput.value = '';
+                
+                // Disable input
+                this.chatInput.disabled = true;
+                this.sendButton.disabled = true;
+                this.showTyping();
+                
+                try {
+                    const response = await this.sendToBot(message);
+                    this.hideTyping();
+                    
+                    if (response.text) {
+                        this.addMessage('bot', response.text);
+                    } else {
+                        this.addMessage('bot', 'I received your message but didn\'t have a text response.');
+                    }
+                } catch (error) {
+                    this.hideTyping();
+                    console.error('Error sending message:', error);
+                    this.addErrorMessage(`Failed to send message: ${error.message}`);
+                } finally {
+                    // Re-enable input
+                    this.chatInput.disabled = false;
+                    this.sendButton.disabled = false;
+                    this.chatInput.focus();
+                }
+            }
+              async sendToBot(message) {
+                try {
+                    // First try the simple test endpoint
+                    const testResponse = await fetch('/api/test-chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ text: message })
+                    });
+                    
+                    if (testResponse.ok) {
+                        const result = await testResponse.json();
+                        return { text: result.text };
+                    }
+                    
+                    throw new Error(`Test endpoint failed: ${testResponse.status} ${testResponse.statusText}`);
+                    
+                } catch (testError) {
+                    console.warn('Test endpoint failed, trying Bot Framework endpoint:', testError);
+                    
+                    // Fallback to Bot Framework endpoint
+                    const payload = {
+                        type: 'message',
+                        id: this.generateMessageId(),
+                        timestamp: new Date().toISOString(),
+                        channelId: 'test',
+                        from: {
+                            id: this.userId,
+                            name: 'Test User'
+                        },
+                        conversation: {
+                            id: this.conversationId
+                        },
+                        recipient: {
+                            id: 'catalog-expert-bot',
+                            name: 'Catalog Expert Bot'
+                        },
+                        text: message,
+                        attachments: [],
+                        entities: [],
+                        channelData: {}
+                    };
+
+                    const response = await fetch('/api/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    // Bot Framework typically returns 200 with no content
+                    // The response would normally go through the Bot Framework connector
+                    // For testing, we'll simulate a response based on common patterns
+                    return this.simulateResponse(message);
+                }
+            }
+            
+            generateMessageId() {
+                return 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            // Simulate a response since we're testing locally without full Bot Framework
+            async simulateResponse(userMessage) {
+                // Wait a bit to simulate processing
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                
+                const lowerMessage = userMessage.toLowerCase();
+                
+                if (lowerMessage.includes('status')) {
+                    try {
+                        const healthResponse = await fetch('/health');
+                        const health = await healthResponse.json();
+                        return {
+                            text: `📊 **Bot Status**: ${health.status || health.Status}\n` +
+                                  `🕐 **Last Load**: ${new Date(health.lastLoadTime || health.LastLoadTime).toLocaleString()}\n` +
+                                  `📱 **Apps Loaded**: ${health.appCount || health.AppCount}\n` +
+                                  `🔐 **Entitlements**: ${health.entitlementCount || health.EntitlementCount}\n` +
+                                  `⚡ **Cache Efficiency**: ${((health.cacheEfficiency || health.CacheEfficiency) * 100).toFixed(1)}%`
+                        };
+                    } catch (error) {
+                        return {
+                            text: '❌ Could not retrieve bot status. The bot may not be responding properly.'
+                        };
+                    }
+                } else if (lowerMessage.includes('help')) {
+                    return {
+                        text: `🤖 **Catalog Expert Bot Help**\n\n` +
+                              `**Available Commands:**\n` +
+                              `• "Find [app name]" - Search for specific apps\n` +
+                              `• "Search for [keyword]" - General keyword search\n` +
+                              `• "Status" - Check bot health and data status\n` +
+                              `• "Help" - Show this help message\n\n` +
+                              `**Example Queries:**\n` +
+                              `• "Find Microsoft apps"\n` +
+                              `• "Search for Teams"\n` +
+                              `• "Show me Outlook apps"\n` +
+                              `• "What apps are available in R1?"`
+                    };
+                } else {
+                    return {
+                        text: `🔍 I received your message: "${userMessage}"\n\n` +
+                              `⚠️ **Note**: This is a test interface. The bot is running but needs proper Bot Framework integration for full conversational responses.\n\n` +
+                              `Try "Status" to check if the bot is healthy, or "Help" for available commands.`
+                    };
+                }
+            }
+        }
+        
+        // Initialize the chat when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new BotChat();
+        });
+    </script>
+</body>
+</html>

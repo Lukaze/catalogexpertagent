@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Catalog Expert Bot",
+			"type": "shell",
+			"command": "dotnet run --project CatalogExpertBot.csproj",
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

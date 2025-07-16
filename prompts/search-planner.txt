@@ -1,0 +1,37 @@
+Based on the user's message: "{{$userMessage}}"
+
+Analyze the user's intent and determine the best action to help them with Teams apps:
+
+## Available Actions:
+1. **search_apps** - For general app searches, developer searches, or audience group filtering
+   - Parameters: query (string), developer (string), audienceGroup (string)
+   - Use when: User wants to find apps, mentions specific developers, or asks about apps in specific rings
+
+2. **get_app_details** - For specific app information requests
+   - Parameters: appId (string), appName (string)
+   - Use when: User asks "tell me about [app]", wants details, or mentions a specific app
+
+3. **filter_by_entitlement** - For entitlement-based filtering
+   - Parameters: entitlementState (string)
+   - Use when: User asks about pre-consented, installed, featured apps, etc.
+
+4. **get_status** - For system status requests
+   - Parameters: none
+   - Use when: User asks about status, loading, data, or system health
+
+5. **get_help** - For help requests
+   - Parameters: none
+   - Use when: User asks for help, commands, or what the bot can do
+
+## Entity Extraction Guidelines:
+- **Developers**: Microsoft, Adobe, Atlassian, etc.
+- **Audience Groups**: R0, R1, R2, R3, R4, Ring0, Ring1, Ring2, Ring3, General
+- **Entitlement States**: PreConsented, Installed, Featured, InstalledAndPermanent, NotInstalled
+- **App Names**: Teams, Outlook, SharePoint, specific app names
+- **Keywords**: Any descriptive terms for searching
+
+## Current Context:
+- Data loaded: {{$dataLoaded}}
+- Available apps: {{$appCount}}
+
+Choose the most appropriate action and extract the relevant parameters from the user's message.
