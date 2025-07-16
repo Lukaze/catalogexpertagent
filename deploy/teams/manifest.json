@@ -1,0 +1,72 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "YOUR_BOT_APP_ID_HERE",
+  "packageName": "com.catalogexpertbot",
+  "developer": {
+    "name": "Your Organization",
+    "websiteUrl": "https://YOUR_WEB_APP_URL_HERE",
+    "privacyUrl": "https://YOUR_WEB_APP_URL_HERE/privacy",
+    "termsOfUseUrl": "https://YOUR_WEB_APP_URL_HERE/terms"
+  },
+  "icons": {
+    "color": "icon-color.png",
+    "outline": "icon-outline.png"
+  },
+  "name": {
+    "short": "Catalog Expert Bot",
+    "full": "Microsoft Teams App Catalog Expert Bot"
+  },
+  "description": {
+    "short": "AI-powered bot for Teams app catalog search and management",
+    "full": "An intelligent bot that helps you search, discover, and manage Microsoft Teams applications from your organization's app catalog using natural language queries."
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [
+    {
+      "botId": "YOUR_BOT_APP_ID_HERE",
+      "scopes": [
+        "personal",
+        "team",
+        "groupchat"
+      ],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": [
+            "personal",
+            "team",
+            "groupchat"
+          ],
+          "commands": [
+            {
+              "title": "Help",
+              "description": "Get help and available commands"
+            },
+            {
+              "title": "Search apps",
+              "description": "Search for apps in the catalog"
+            },
+            {
+              "title": "Status",
+              "description": "Check bot status and configuration"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "YOUR_WEB_APP_DOMAIN_HERE"
+  ],
+  "webApplicationInfo": {
+    "id": "YOUR_BOT_APP_ID_HERE",
+    "resource": "https://graph.microsoft.com"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "microsoftAppId": {
+      "value": "TEMPLATE_PLACEHOLDER_FOR_BOT_APP_ID"
+    },
+    "microsoftAppPassword": {
+      "value": "TEMPLATE_PLACEHOLDER_FOR_BOT_APP_PASSWORD"
+    },
+    "microsoftAppTenantId": {
+      "value": "TEMPLATE_PLACEHOLDER_FOR_TENANT_ID"
+    },
+    "azureOpenAIApiKey": {
+      "value": "TEMPLATE_PLACEHOLDER_FOR_AZURE_OPENAI_KEY"
+    },
+    "azureOpenAIEndpoint": {
+      "value": "TEMPLATE_PLACEHOLDER_FOR_AZURE_OPENAI_ENDPOINT"
+    }
+  }
+}

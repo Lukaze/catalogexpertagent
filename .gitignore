@@ -183,5 +183,8 @@ ModelManifest.xml
 appsettings.secrets.json
 *.secrets.json
 
+# Azure deployment parameters with secrets
+deploy/*.secrets.json
+
 # Application log files
 app.log
