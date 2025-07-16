@@ -24,7 +24,7 @@ public class ResponseFormatterService : IResponseFormatterService
         }
 
         var response = new StringBuilder();
-        response.AppendLine($"🔍 **Found {searchResult.TotalCount} apps matching \"{searchResult.Query}\":**");
+        response.AppendLine($"🔍 Found {searchResult.TotalCount} apps matching \"{searchResult.Query}\":");
         response.AppendLine();
 
         for (int i = 0; i < searchResult.Apps.Count; i++)
@@ -40,7 +40,7 @@ public class ResponseFormatterService : IResponseFormatterService
             var coreAppIndicator = app.IsCoreApp ? " 🏢" : "";
             var teamsOwnedIndicator = app.IsTeamsOwned ? " ⚡" : "";
 
-            response.AppendLine($"{i + 1}. 📱 **{app.Name}**{coreAppIndicator}{teamsOwnedIndicator}");
+            response.AppendLine($"{i + 1}. 📱 \"{app.Name}\"{coreAppIndicator}{teamsOwnedIndicator}");
             response.AppendLine($"   🏢 {app.DeveloperName}");
             response.AppendLine($"   📋 {app.Id}");
             response.AppendLine($"   🎯 Available in: {audienceGroupsText}");
@@ -62,12 +62,11 @@ public class ResponseFormatterService : IResponseFormatterService
         }
 
         if (searchResult.HasMore)
-        {
-            response.AppendLine($"💡 **Showing {searchResult.Apps.Count} of {searchResult.TotalCount} results.** Ask for more details about a specific app by saying \"Tell me about app [App Name or ID]\"");
+        {            response.AppendLine($"💡 Showing {searchResult.Apps.Count} of {searchResult.TotalCount} results. Ask for more details about a specific app by saying \"Tell me about app [App Name or ID]\"");
         }
-
+        
         response.AppendLine();
-        response.AppendLine("💬 **What would you like to know?**");
+        response.AppendLine("💬 What would you like to know?");
         response.AppendLine("• \"Tell me about [App Name]\" - Get detailed information");
         response.AppendLine("• \"Find Microsoft apps\" - Search by developer");
         response.AppendLine("• \"Apps available in R1\" - Filter by audience group");
@@ -87,23 +86,23 @@ public class ResponseFormatterService : IResponseFormatterService
         var coreAppIndicator = app.IsCoreApp ? " 🏢" : "";
         var teamsOwnedIndicator = app.IsTeamsOwned ? " ⚡" : "";
         
-        response.AppendLine($"📱 **{app.Name}**{coreAppIndicator}{teamsOwnedIndicator}");
-        response.AppendLine($"🏢 **Developer:** {app.DeveloperName}");
-        response.AppendLine($"📋 **App ID:** `{app.Id}`");
-        response.AppendLine($"🎯 **Version:** {app.Version}");
+        response.AppendLine($"📱 \"{app.Name}\"{coreAppIndicator}{teamsOwnedIndicator}");
+        response.AppendLine($"🏢 Developer: {app.DeveloperName}");
+        response.AppendLine($"📋 App ID: {app.Id}");
+        response.AppendLine($"🎯 Version: {app.Version}");
         response.AppendLine();
 
         // Description
         if (!string.IsNullOrEmpty(app.ShortDescription))
         {
-            response.AppendLine($"📄 **Description:** {app.ShortDescription}");
+            response.AppendLine($"📄 Description: {app.ShortDescription}");
             response.AppendLine();
         }
 
         // Audience group versions
         if (appDetail.AudienceGroupVersions.Count > 1)
         {
-            response.AppendLine("🌐 **Audience Group Versions:**");
+            response.AppendLine("🌐 Audience Group Versions:");
             foreach (var (audienceGroup, appVersion) in appDetail.AudienceGroupVersions.OrderBy(kv => kv.Key))
             {
                 var ringName = GetRingDisplayName(audienceGroup);
@@ -115,7 +114,7 @@ public class ResponseFormatterService : IResponseFormatterService
         // Entitlements
         if (appDetail.Entitlements.Any())
         {
-            response.AppendLine("🔐 **Entitlement States:**");
+            response.AppendLine("🔐 Entitlement States:");
             var groupedEntitlements = appDetail.Entitlements
                 .GroupBy(e => e.AudienceGroup)
                 .OrderBy(g => g.Key);
@@ -132,7 +131,7 @@ public class ResponseFormatterService : IResponseFormatterService
         // Categories and capabilities
         if (app.Categories.Any())
         {
-            response.AppendLine($"🏷️ **Categories:** {string.Join(", ", app.Categories)}");
+            response.AppendLine($"🏷️ Categories: {string.Join(", ", app.Categories)}");
         }
 
         var capabilities = new List<string>();
@@ -144,7 +143,7 @@ public class ResponseFormatterService : IResponseFormatterService
 
         if (capabilities.Any())
         {
-            response.AppendLine($"⚙️ **Capabilities:** {string.Join(", ", capabilities)}");
+            response.AppendLine($"⚙️ Capabilities: {string.Join(", ", capabilities)}");
         }
 
         // Feature flags
@@ -155,12 +154,11 @@ public class ResponseFormatterService : IResponseFormatterService
         if (app.CopilotEnabled) features.Add("Copilot Enabled");
 
         if (features.Any())
-        {
-            response.AppendLine($"🏆 **Features:** {string.Join(", ", features)}");
+        {            response.AppendLine($"🏆 Features: {string.Join(", ", features)}");
         }
-
+        
         response.AppendLine();
-        response.AppendLine("💬 **Need more info?** Ask me about other apps or search for specific features!");
+        response.AppendLine("💬 Need more info? Ask me about other apps or search for specific features!");
 
         return response.ToString();
     }
@@ -173,7 +171,7 @@ public class ResponseFormatterService : IResponseFormatterService
         
         if (status.IsLoading)
         {
-            response.AppendLine("🔄 **Loading Teams App Catalog Data...**");
+            response.AppendLine("🔄 Loading Teams App Catalog Data...");
             response.AppendLine($"📊 Apps loaded: {status.AppDefinitionsLoaded:N0}");
             response.AppendLine($"🔐 Entitlements loaded: {status.EntitlementsLoaded:N0}");
             if (status.CacheEfficiency > 0)
@@ -183,9 +181,9 @@ public class ResponseFormatterService : IResponseFormatterService
         }
         else if (status.IsComplete)
         {
-            response.AppendLine("✅ **Catalog Data Loaded Successfully**");
+            response.AppendLine("✅ Catalog Data Loaded Successfully");
             response.AppendLine();
-            response.AppendLine($"📊 **Statistics:**");
+            response.AppendLine($"📊 Statistics:");
             response.AppendLine($"• Apps loaded: {status.AppDefinitionsLoaded:N0}");
             response.AppendLine($"• Entitlements processed: {status.EntitlementsLoaded:N0}");
             response.AppendLine($"• Load time: {status.LoadDuration?.TotalSeconds:F1} seconds");
@@ -197,17 +195,17 @@ public class ResponseFormatterService : IResponseFormatterService
             }
             
             response.AppendLine();
-            response.AppendLine("🔍 **Ready to search!** Try asking me:");
+            response.AppendLine("🔍 Ready to search! Try asking me:");
             response.AppendLine("• \"Find Microsoft apps\"");
             response.AppendLine("• \"Show apps available in R1\"");
             response.AppendLine("• \"What apps are pre-consented?\"");
         }
         else
         {
-            response.AppendLine("⚠️ **Catalog data not loaded**");
+            response.AppendLine("⚠️ Catalog data not loaded");
             if (status.Errors.Any())
             {
-                response.AppendLine("**Errors encountered:**");
+                response.AppendLine("Errors encountered:");
                 foreach (var error in status.Errors.Take(3))
                 {
                     response.AppendLine($"• {error}");
@@ -223,21 +221,21 @@ public class ResponseFormatterService : IResponseFormatterService
         await Task.CompletedTask;
         
         var response = new StringBuilder();
-        response.AppendLine("🤖 **Teams App Catalog Expert Bot**");
+        response.AppendLine("🤖 Teams App Catalog Expert Bot");
         response.AppendLine();
         response.AppendLine("I can help you explore the Microsoft Teams app catalog across different audience groups (rings). Here's what I can do:");
         response.AppendLine();
-        response.AppendLine("🔍 **Search Commands:**");
+        response.AppendLine("🔍 Search Commands:");
         response.AppendLine("• \"Find [app name]\" - Search for specific apps");
         response.AppendLine("• \"Microsoft apps\" - Find apps by Microsoft");
         response.AppendLine("• \"Tell me about [app name/ID]\" - Get detailed app information");
         response.AppendLine();
-        response.AppendLine("🎯 **Filter by Audience Groups:**");
+        response.AppendLine("🎯 Filter by Audience Groups:");
         response.AppendLine("• \"Apps available in R1\" (Ring 1)");
         response.AppendLine("• \"Apps in general\" (R4 - General audience)");
         response.AppendLine("• \"Ring0 apps\" (R0 - Earliest preview)");
         response.AppendLine();
-        response.AppendLine("🔐 **Filter by Entitlement States:**");
+        response.AppendLine("🔐 Filter by Entitlement States:");
         response.AppendLine("• \"Pre-consented apps\" - Apps installed silently");
         response.AppendLine("• \"Permanently installed apps\" - Cannot be uninstalled");
         response.AppendLine("• \"Featured apps\" - Highlighted in store");
