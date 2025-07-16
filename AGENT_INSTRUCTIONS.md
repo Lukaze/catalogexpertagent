@@ -20,7 +20,8 @@
 1. Make code changes
 2. Run `.\run.ps1` to test
 3. Fix any issues
-4. Commit changes
+4. **Ask user to verify changes before committing**
+5. Commit changes only when explicitly instructed
 
 ---
 
@@ -36,6 +37,7 @@
 - Essential error messages or warnings
 - Brief confirmation when major changes complete
 - Next steps only if unclear what to do
+- **Request for user verification before committing changes**
 
 ### ❌ **What to Skip:**
 - Detailed "what I just did" summaries
@@ -43,6 +45,7 @@
 - Step-by-step narration of routine operations
 - Excessive emoji usage and formatting
 - Long success confirmation messages
+- **Automatic commits without user approval**
 
 ### 💡 **Communication Style:**
 - Get straight to the point
@@ -167,13 +170,14 @@ Create `appsettings.secrets.json` with your AI credentials and Bot Framework set
 2. Verify all features work as expected
 3. Check for compilation errors/warnings
 4. Ensure AI service is properly configured
+5. **WAIT for user verification and explicit commit instruction**
 
 ### ✅ **Git Practices:**
 1. Write clear, descriptive commit messages
 2. Group related changes in single commits
 3. Don't commit build artifacts or temp files
 4. Keep commits focused and atomic
-5. **For AI agents:** Commit efficiently without extensive verification
+5. **For AI agents:** Only commit when explicitly instructed by the user after verification
 
 ---
 

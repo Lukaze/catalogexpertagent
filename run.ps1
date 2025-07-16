@@ -10,9 +10,22 @@ param(
 # Setup logging
 $LogFile = "app.log"
 
-# Clear previous log file
+# Kill existing processes FIRST (before trying to access log file)
+Write-Host "🔄 Stopping existing processes..." -ForegroundColor Yellow
+taskkill /F /IM CatalogExpertBot.exe 2>$null
+taskkill /F /IM dotnet.exe /FI "WINDOWTITLE eq *CatalogExpertBot*" 2>$null
+Get-Process -Name "dotnet" -ErrorAction SilentlyContinue | Where-Object { $_.MainModule.FileName -like "*catalogexpertagent*" } | ForEach-Object { Stop-Process -Id $_.Id -Force }
+Start-Sleep 2
+
+# Clear previous log file (after processes are stopped)
 if (Test-Path $LogFile) {
-    Remove-Item $LogFile
+    try {
+        Remove-Item $LogFile -Force
+    } catch {
+        # If file is locked, try to rename it first
+        if (Test-Path "$LogFile.old") { Remove-Item "$LogFile.old" -Force -ErrorAction SilentlyContinue }
+        Rename-Item $LogFile "$LogFile.old" -ErrorAction SilentlyContinue
+    }
 }
 
 # Function to write timestamped messages to both console and log
@@ -21,19 +34,23 @@ function Write-LogMessage {
     $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     $TimestampedMessage = "[$Timestamp] $Message"
     Write-Host $Message -ForegroundColor $Color
-    $TimestampedMessage | Out-File -FilePath $LogFile -Append -Encoding UTF8
+    try {
+        $TimestampedMessage | Out-File -FilePath $LogFile -Append -Encoding UTF8
+    } catch {
+        # If still can't write to log, continue without logging to file
+    }
 }
 
 Write-LogMessage "🚀 Quick Build - Port $Port ($Config)" "Cyan"
 
-# Kill existing processes
-Write-LogMessage "🔄 Stopping existing processes..." "Yellow"
-taskkill /F /IM CatalogExpertBot.exe 2>&1 | Tee-Object -FilePath $LogFile -Append | Out-Null
-Start-Sleep 1
-
 # Build and run
 Write-LogMessage "🔨 Building..." "Yellow"
-dotnet build catalogexpertagent.sln --configuration $Config --verbosity quiet 2>&1 | Tee-Object -FilePath $LogFile -Append
+try {
+    dotnet build catalogexpertagent.sln --configuration $Config --verbosity quiet 2>&1 | Tee-Object -FilePath $LogFile -Append
+} catch {
+    # If can't write to log file, just run the build
+    dotnet build catalogexpertagent.sln --configuration $Config --verbosity quiet
+}
 
 if ($LASTEXITCODE -eq 0) {
     Write-LogMessage "✅ Build successful - Starting on port $Port" "Green"
