@@ -166,9 +166,12 @@ public class SearchService : ISearchService
         
         var results = new List<AppSearchResult>();
         
+        // Normalize audience group to internal format
+        var normalizedAudienceGroup = NormalizeAudienceGroup(audienceGroup);
+        
         foreach (var (appId, audienceGroupApps) in appDefinitions)
         {
-            if (audienceGroupApps.ContainsKey(audienceGroup))
+            if (audienceGroupApps.ContainsKey(normalizedAudienceGroup))
             {
                 var result = CreateAppSearchResult(appId, audienceGroupApps, entitlements);
                 results.Add(result);
@@ -176,6 +179,24 @@ public class SearchService : ISearchService
         }
 
         return results.OrderBy(r => r.Name).ToList();
+    }
+
+    private static string NormalizeAudienceGroup(string audienceGroup)
+    {
+        // Convert user-friendly names to internal format
+        return audienceGroup.ToLowerInvariant() switch
+        {
+            "r0" or "ring0" => "ring0",
+            "r1" or "ring1" => "ring1", 
+            "r1.5" or "ring1.5" or "ring1_5" => "ring1_5",
+            "r1.6" or "ring1.6" or "ring1_6" => "ring1_6",
+            "r2" or "ring2" => "ring2",
+            "r3" or "ring3" => "ring3",
+            "r3.6" or "ring3.6" or "ring3_6" => "ring3_6",
+            "r3.9" or "ring3.9" or "ring3_9" => "ring3_9",
+            "r4" or "general" => "general",
+            _ => audienceGroup.ToLowerInvariant()
+        };
     }
 
     public async Task<List<AppSearchResult>> FindAppsByEntitlementStateAsync(string state)
