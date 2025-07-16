@@ -63,10 +63,10 @@ public class AppDefinition
     
     // Configuration & Behavior
     public string? DefaultInstallScope { get; set; }
-    public string? DefaultGroupCapability { get; set; }
+    public DefaultGroupCapability? DefaultGroupCapability { get; set; }
     public List<string> SupportedChannelTypes { get; set; } = new();
     public List<string> SupportedHubs { get; set; } = new();
-    public List<ConfigurableProperty> ConfigurableProperties { get; set; } = new();
+    public List<string> ConfigurableProperties { get; set; } = new();
     public ScopeConstraints? ScopeConstraints { get; set; }
     
     // Feature Flags & Capabilities
@@ -204,11 +204,16 @@ public class SecurityComplianceInfo
     public string Status { get; set; } = string.Empty;
 }
 
-public class ConfigurableProperty
+public class DefaultGroupCapability
 {
-    public string Name { get; set; } = string.Empty;
-    public string Title { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    [JsonPropertyName("groupchat")]
+    public string? GroupChat { get; set; }
+    
+    [JsonPropertyName("meetings")]
+    public string? Meetings { get; set; }
+    
+    [JsonPropertyName("team")]
+    public string? Team { get; set; }
 }
 
 public class ScopeConstraints
