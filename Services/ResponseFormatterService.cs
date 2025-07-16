@@ -240,11 +240,11 @@ public class ResponseFormatterService : IResponseFormatterService
         response.AppendLine("• \"Permanently installed apps\" - Cannot be uninstalled");
         response.AppendLine("• \"Featured apps\" - Highlighted in store");
         response.AppendLine();
-        response.AppendLine("📊 **System Commands:**");
+        response.AppendLine("📊 System Commands:");
         response.AppendLine("• \"Status\" - Check data loading status");
         response.AppendLine("• \"Help\" - Show this message");
         response.AppendLine();
-        response.AppendLine("💡 **Tips:**");
+        response.AppendLine("💡 Tips:");
         response.AppendLine("• Use wildcards: \"Find Teams*\" finds all apps starting with 'Teams'");
         response.AppendLine("• Ask follow-up questions about specific apps");
         response.AppendLine("• I understand natural language - just ask what you want to know!");
@@ -256,7 +256,7 @@ public class ResponseFormatterService : IResponseFormatterService
     {
         await Task.CompletedTask;
         
-        return $"❌ **Error:** {error}\n\n💡 Try asking for \"help\" to see available commands, or \"status\" to check if the catalog data is loaded.";
+        return $"❌ Error: {error}\n\n💡 Try asking for \"help\" to see available commands, or \"status\" to check if the catalog data is loaded.";
     }
 
     private static string GetRingDisplayName(string audienceGroup)

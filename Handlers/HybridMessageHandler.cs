@@ -37,7 +37,7 @@ public class HybridMessageHandler
         // AI-only mode - fail if AI is not available
         if (!_aiService.IsAvailable)
         {
-            return "❌ **AI Service Required**: This bot requires AI functionality to be enabled. Please configure Azure OpenAI credentials in `appsettings.secrets.json`.";
+            return "❌ AI Service Required: This bot requires AI functionality to be enabled. Please configure Azure OpenAI credentials in `appsettings.secrets.json`.";
         }
 
         try
@@ -46,12 +46,12 @@ public class HybridMessageHandler
             var aiResponse = await _aiService.ProcessMessageAsync(userMessage, cancellationToken);
             
             _logger.LogInformation("AI successfully processed message, response length: {Length}", aiResponse?.Length ?? 0);
-            return aiResponse ?? "❌ **AI Response Error**: Received empty response from AI service.";
+            return aiResponse ?? "❌ AI Response Error: Received empty response from AI service.";
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "AI processing failed");
-            return "❌ **AI Processing Error**: I encountered an error while processing your request with AI. Please check the AI service configuration and try again.";
+            return "❌ AI Processing Error: I encountered an error while processing your request with AI. Please check the AI service configuration and try again.";
         }
     }
 }

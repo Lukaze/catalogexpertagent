@@ -206,31 +206,29 @@ public class AIService : IAIService
 
             if (toolCalls.Any())
             {
-                // Process function calls
+                // Process function calls and return the result directly without additional AI processing
+                var functionResults = new List<string>();
+                
                 foreach (var toolCall in toolCalls)
                 {
                     if (toolCall is ChatToolCall functionCall)
                     {
                         var functionResult = await ExecuteFunctionAsync(functionCall.FunctionName, functionCall.FunctionArguments);
+                        functionResults.Add(functionResult);
                         
-                        // Add the function result to the conversation
-                        messages.Add(new AssistantChatMessage(toolCalls));
-                        messages.Add(new ToolChatMessage(toolCall.Id, functionResult));
+                        _logger.LogInformation("Executed function {FunctionName} with result length: {Length}", 
+                            functionCall.FunctionName, functionResult?.Length ?? 0);
+                        _logger.LogInformation("Function result preview: {Preview}", 
+                            functionResult?.Substring(0, Math.Min(200, functionResult.Length)) ?? "null");
                     }
                 }
                 
-                // Get the final response from the AI
-                var finalResponse = await chatClient.CompleteChatAsync(messages, new ChatCompletionOptions
+                // Return the function result directly without additional AI processing
+                var combinedResult = string.Join("\n\n", functionResults);
+                if (!string.IsNullOrEmpty(combinedResult))
                 {
-                    MaxTokens = _config.MaxTokens,
-                    Temperature = (float)_config.Temperature
-                }, cancellationToken);
-                
-                var finalContent = finalResponse.Value.Content.FirstOrDefault()?.Text;
-                if (!string.IsNullOrEmpty(finalContent))
-                {
-                    _logger.LogInformation("AI response with function calling generated successfully, length: {Length}", finalContent.Length);
-                    return finalContent;
+                    _logger.LogInformation("AI response with function calling generated successfully, length: {Length}", combinedResult.Length);
+                    return combinedResult;
                 }
             }
             else if (!string.IsNullOrEmpty(responseMessage?.Text))
@@ -457,24 +455,24 @@ When users ask about specific apps, developers, or features, provide helpful gui
     {
         await Task.CompletedTask;
         return """
-            🤖 **Teams App Catalog Expert - Help**
+            🤖 Teams App Catalog Expert - Help
             
             I can help you with:
             
-            🔍 **Search Commands:**
+            🔍 Search Commands:
             - "Search for [app name]" - Find apps by name
             - "Show me Microsoft apps" - Find apps by developer
             - "Apps in R1" - Find apps by audience group
             
-            📱 **App Details:**
+            📱 App Details:
             - "Tell me about [app name]" - Get detailed app information
             - "Show details for app [app-id]" - Get details by app ID
             
-            🎯 **Filtering:**
+            🎯 Filtering:
             - "Show pre-consented apps" - Filter by entitlement state
             - "Show installed apps" - Find permanently installed apps
             
-            📊 **System:**
+            📊 System:
             - "Status" - Check data loading status
             - "Help" - Show this help message
             
@@ -493,7 +491,7 @@ When users ask about specific apps, developers, or features, provide helpful gui
 
         var response = new StringBuilder();
         var count = totalCount ?? apps.Count;
-        response.AppendLine($"🔍 **Found {count} apps matching \"{query}\":**");
+        response.AppendLine($"🔍 Found {count} apps matching \"{query}\":");
         response.AppendLine();
 
         for (int i = 0; i < Math.Min(apps.Count, 10); i++)
@@ -509,7 +507,7 @@ When users ask about specific apps, developers, or features, provide helpful gui
             var coreAppIndicator = app.IsCoreApp ? " 🏢" : "";
             var teamsOwnedIndicator = app.IsTeamsOwned ? " ⚡" : "";
 
-            response.AppendLine($"{i + 1}. 📱 **{app.Name}**{coreAppIndicator}{teamsOwnedIndicator}");
+            response.AppendLine($"{i + 1}. 📱 \"{app.Name}\"{coreAppIndicator}{teamsOwnedIndicator}");
             response.AppendLine($"   🏢 {app.DeveloperName}");
             response.AppendLine($"   📋 {app.Id}");
             response.AppendLine($"   🎯 Available in: {audienceGroupsText}");
@@ -545,14 +543,17 @@ When users ask about specific apps, developers, or features, provide helpful gui
         if (details.AppDefinition != null)
         {
             var app = details.AppDefinition;
-            response.AppendLine($"📱 **{app.Name}**");
-            response.AppendLine($"🏢 **Developer:** {app.DeveloperName}");
-            response.AppendLine($"📋 **App ID:** {app.Id}");
+            var coreAppIndicator = app.IsCoreApp ? " 🏢" : "";
+            var teamsOwnedIndicator = app.IsTeamsOwned ? " ⚡" : "";
+            
+            response.AppendLine($"📱 \"{app.Name}\"{coreAppIndicator}{teamsOwnedIndicator}");
+            response.AppendLine($"🏢 Developer: {app.DeveloperName}");
+            response.AppendLine($"📋 App ID: {app.Id}");
             response.AppendLine();
 
             if (!string.IsNullOrEmpty(app.LongDescription))
             {
-                response.AppendLine($"📝 **Description:**");
+                response.AppendLine($"📝 Description:");
                 response.AppendLine(app.LongDescription);
                 response.AppendLine();
             }
@@ -561,12 +562,12 @@ When users ask about specific apps, developers, or features, provide helpful gui
         if (details.AudienceGroupVersions.Any())
         {
             var audienceGroups = string.Join(", ", details.AudienceGroupVersions.Keys);
-            response.AppendLine($"🎯 **Available in Audience Groups:** {audienceGroups}");
+            response.AppendLine($"🎯 Available in Audience Groups: {audienceGroups}");
         }
 
         if (details.Entitlements.Any())
         {
-            response.AppendLine($"✅ **Entitlements:** {details.Entitlements.Count} states");
+            response.AppendLine($"✅ Entitlements: {details.Entitlements.Count} states");
             foreach (var entitlement in details.Entitlements.Take(5))
             {
                 response.AppendLine($"   • {entitlement.State} in {entitlement.AudienceGroup}");
@@ -583,43 +584,43 @@ When users ask about specific apps, developers, or features, provide helpful gui
     private string FormatStatus(LoadingStatus status)
     {
         var response = new StringBuilder();
-        response.AppendLine("📊 **System Status**");
+        response.AppendLine("📊 System Status");
         response.AppendLine();
         
         if (status.IsComplete)
         {
-            response.AppendLine("✅ **Data Status:** Loaded and ready");
-            response.AppendLine($"📱 **App Definitions:** {status.AppDefinitionsLoaded:N0}");
-            response.AppendLine($"✅ **Entitlements:** {status.EntitlementsLoaded:N0}");
-            response.AppendLine($"⚙️ **Configurations:** {status.ConfigurationsLoaded:N0}");
+            response.AppendLine("✅ Data Status: Loaded and ready");
+            response.AppendLine($"📱 App Definitions: {status.AppDefinitionsLoaded:N0}");
+            response.AppendLine($"✅ Entitlements: {status.EntitlementsLoaded:N0}");
+            response.AppendLine($"⚙️ Configurations: {status.ConfigurationsLoaded:N0}");
             if (status.LastLoadTime.HasValue)
             {
-                response.AppendLine($"⏰ **Last Updated:** {status.LastLoadTime.Value:yyyy-MM-dd HH:mm:ss}");
+                response.AppendLine($"⏰ Last Updated: {status.LastLoadTime.Value:yyyy-MM-dd HH:mm:ss}");
             }
             if (status.LoadDuration.HasValue)
             {
-                response.AppendLine($"⏱️ **Load Duration:** {status.LoadDuration.Value.TotalSeconds:F1}s");
+                response.AppendLine($"⏱️ Load Duration: {status.LoadDuration.Value.TotalSeconds:F1}s");
             }
-            response.AppendLine($"📊 **Cache Efficiency:** {status.CacheEfficiency:P1}");
+            response.AppendLine($"📊 Cache Efficiency: {status.CacheEfficiency:P1}");
         }
         else if (status.IsLoading)
         {
-            response.AppendLine("🔄 **Data Status:** Loading...");
-            response.AppendLine($"📈 **Apps Loaded:** {status.AppDefinitionsLoaded:N0}");
-            response.AppendLine($"✅ **Entitlements:** {status.EntitlementsLoaded:N0}");
+            response.AppendLine("🔄 Data Status: Loading...");
+            response.AppendLine($"📈 Apps Loaded: {status.AppDefinitionsLoaded:N0}");
+            response.AppendLine($"✅ Entitlements: {status.EntitlementsLoaded:N0}");
         }
         else
         {
-            response.AppendLine("⚠️ **Data Status:** Not loaded");
+            response.AppendLine("⚠️ Data Status: Not loaded");
         }
 
         if (status.Errors.Any())
         {
-            response.AppendLine($"⚠️ **Errors:** {status.Errors.Count}");
+            response.AppendLine($"⚠️ Errors: {status.Errors.Count}");
         }
         
         response.AppendLine();
-        response.AppendLine("🤖 **AI Status:** Active and ready to help!");
+        response.AppendLine("🤖 AI Status: Active and ready to help!");
         
         return response.ToString();
     }
