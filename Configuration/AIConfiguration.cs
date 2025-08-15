@@ -2,7 +2,7 @@ namespace CatalogExpertBot.Configuration;
 
 public class AIConfiguration
 {
-    public string Provider { get; set; } = "AzureOpenAI"; // "OpenAI", "AzureOpenAI"
+    public string Provider { get; set; } = "AzureOpenAI"; // "OpenAI", "AzureOpenAI", "Anthropic"
     public string Model { get; set; } = "gpt-4o";
     public string DeploymentName { get; set; } = ""; // Azure OpenAI deployment name
     public string ApiKey { get; set; } = "";
